@@ -1,0 +1,111 @@
+id: 
+name: GitOps.PullRequestIssueManagement
+description: GitOps.PullRequestIssueManagement primitive
+owner: 
+resource: repository
+disabled: false
+where: 
+configuration:
+  resourceManagementConfiguration:
+    scheduledSearches:
+    - description: 
+      frequencies:
+      - hourly:
+          hour: 6
+      filters:
+      - isIssue
+      - isOpen
+      - hasLabel:
+          label: stale
+      - noActivitySince:
+          days: 7
+      actions:
+      - closeIssue
+      - addReply:
+          reply: This issue will now be closed because it hasn't had any activity for 7 days after stale. ${issueAuthor} feel free to comment again on the next 7 days to reopen or open a new issue after that time if you still have a question/issue or suggestion.
+    - description: 
+      frequencies:
+      - hourly:
+          hour: 6
+      filters:
+      - isIssue
+      - isOpen
+      - noActivitySince:
+          days: 60
+      - isNotLabeledWith:
+          label: stale
+      - isNotLabeledWith:
+          label: feature-request
+      - isNotLabeledWith:
+          label: bug
+      actions:
+      - addLabel:
+          label: stale
+      - addReply:
+          reply: This issue has been automatically marked as stale because it has not had any activity for **60 days**. It will be closed if no further activity occurs **within 15 days of this comment**.
+    - description: 
+      frequencies:
+      - hourly:
+          hour: 6
+      filters:
+      - isIssue
+      - isOpen
+      - hasLabel:
+          label: resolution/duplicate
+      - noActivitySince:
+          days: 1
+      actions:
+      - addReply:
+          reply: This issue has been marked as duplicate and has not had any activity for **1 day**. It will be closed for housekeeping purposes.
+      - closeIssue
+    - description: 
+      frequencies:
+      - daily:
+          time: 9:0
+      - daily:
+          time: 12:0
+      - daily:
+          time: 15:0
+      - daily:
+          time: 18:0
+      filters:
+      - isOpen
+      - hasLabel:
+          label: action-required
+      - noActivitySince:
+          days: 5
+      - isNotLabeledWith:
+          label: Needs Author Feedback
+      - isNotLabeledWith:
+          label: Needs Information
+      - isNotLabeledWith:
+          label: 'Needs Attention :wave:'
+      - isNotAssigned
+      actions:
+      - addReply:
+          reply: Action required from @AllenWen-at-Azure
+      - addLabel:
+          label: 'Needs Attention :wave:'
+    eventResponderTasks:
+    - if:
+      - payloadType: Issue_Comment
+      - isAction:
+          action: Created
+      - isActivitySender:
+          issueAuthor: True
+      - isOpen
+      - or:
+        - hasLabel:
+            label: Needs Information
+        - hasLabel:
+            label: Needs Author Feedback
+      then:
+      - addLabel:
+          label: action-required
+      - removeLabel:
+          label: Needs Author Feedback
+      - removeLabel:
+          label: Needs Information
+      description: 
+onFailure: 
+onSuccess: 
