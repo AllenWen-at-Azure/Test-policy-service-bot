@@ -106,6 +106,8 @@ configuration:
           label: Needs Author Feedback
       - removeLabel:
           label: Needs Information
+      - addReply:
+          reply: Action required from @AllenWen-at-Azure
       description: 
 onFailure: 
 onSuccess: 
